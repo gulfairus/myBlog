@@ -14,24 +14,16 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 import os
 
 
-'''
-Make sure the required packages are installed: 
-Open the Terminal in PyCharm (bottom left). 
 
-On Windows type:
-python -m pip install -r requirements.txt
-
-On MacOS type:
-pip3 install -r requirements.txt
-
-This will install the packages from the requirements.txt for this project.
-'''
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 ckeditor = CKEditor(app)
 Bootstrap5(app)
+
+SECRET_KEY = os.urandom(32)
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # Configure Flask-Login
 login_manager = LoginManager()
@@ -76,7 +68,6 @@ class BlogPost(db.Model):
     comments = relationship("Comment", back_populates="parent_post")
 
 
-# Create a User table for all your registered users
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -90,7 +81,6 @@ class User(UserMixin, db.Model):
     comments = relationship("Comment", back_populates="comment_author")
 
 
-# Create a table for the comments on the blog posts
 class Comment(db.Model):
     __tablename__ = "comments"
     id = db.Column(db.Integer, primary_key=True)
@@ -211,7 +201,7 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, current_user=current_user, form=comment_form)
 
 
-# Use a decorator so only an admin user can create new posts
+#  a decorator so only an admin user can create new posts
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
@@ -231,7 +221,7 @@ def add_new_post():
     return render_template("make-post.html", form=form, current_user=current_user)
 
 
-# Use a decorator so only an admin user can edit a post
+#  a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
@@ -253,7 +243,7 @@ def edit_post(post_id):
     return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user)
 
 
-# Use a decorator so only an admin user can delete a post
+# a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
@@ -265,36 +255,18 @@ def delete_post(post_id):
 
 @app.route("/about")
 def about():
-    return render_template("about.html", current_user=current_user)
+    return render_template("gulf.html", current_user=current_user)
 
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     return render_template("contact.html", current_user=current_user)
 
-# Optional: You can inclue the email sending code from Day 60:
-# DON'T put your email and password here directly! The code will be visible when you upload to Github.
-# Use environment variables instead (Day 35)
-
-# MAIL_ADDRESS = os.environ.get("EMAIL_KEY")
-# MAIL_APP_PW = os.environ.get("PASSWORD_KEY")
-
-# @app.route("/contact", methods=["GET", "POST"])
-# def contact():
-#     if request.method == "POST":
-#         data = request.form
-#         send_email(data["name"], data["email"], data["phone"], data["message"])
-#         return render_template("contact.html", msg_sent=True)
-#     return render_template("contact.html", msg_sent=False)
-#
-#
-# def send_email(name, email, phone, message):
-#     email_message = f"Subject:New Message\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage:{message}"
-#     with smtplib.SMTP("smtp.gmail.com") as connection:
-#         connection.starttls()
-#         connection.login(MAIL_ADDRESS, MAIL_APP_PW)
-#         connection.sendmail(MAIL_ADDRESS, MAIL_APP_PW, email_message)
 
 
-if __name__ == "__main__":
-    app.run(debug=False)
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
